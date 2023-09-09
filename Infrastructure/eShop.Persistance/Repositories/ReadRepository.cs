@@ -12,29 +12,21 @@ public class ReadRepository<T> : IReadRepository<T> where T : BaseEntity
 
     public ReadRepository(eShopDbContext context)
     {
-       this._context = context;
+        this._context = context;
     }
 
     DbSet<T> Table => _context.Set<T>();
 
-    public IEnumerable<T> GetAll(bool tracking = true)
+    public IEnumerable<T?> GetAll(bool tracking = true)
     {
         if (tracking) return Table.ToList();
-            return Table.AsNoTracking().ToList();
-    }
-    
-    public Task<T> GetAsync(string id)
-    {
-        throw new NotImplementedException();
+        return Table.AsNoTracking().ToList();
     }
 
-    public Task<T> GetAsync(Expression<Func<T, bool>> expression)
-    {
-        throw new NotImplementedException();
-    }
+    public async Task<T?> GetAsync(string id) => await Table.FindAsync(Guid.Parse(id));
 
-    public IEnumerable<T> GetWhere(Expression<Func<T, bool>> expression)
-    {
-        throw new NotImplementedException();
-    }
-}
+    public async Task<T?> GetAsync(Expression<Func<T, bool>> expression) => await Table.FirstOrDefaultAsync(expression);
+
+    public IEnumerable<T?> GetWhere(Expression<Func<T, bool>> expression) => Table.Where(expression);
+
+}   
