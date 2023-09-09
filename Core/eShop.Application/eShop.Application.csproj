@@ -12,4 +12,8 @@
     <Folder Include="ViewModels\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\eShop.Domain\eShop.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
