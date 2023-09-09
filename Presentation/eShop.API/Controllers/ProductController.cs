@@ -1,5 +1,7 @@
 ﻿using eShop.Application.Paginations;
 using eShop.Application.Repositories.ProductRepository;
+using eShop.Application.ViewModels;
+using eShop.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eShop.API.Controllers;
@@ -34,5 +36,38 @@ public class ProductController : ControllerBase
             return BadRequest();
         }
     }
+
+    [HttpPost("add")]
+    public async Task<IActionResult> Add([FromBody]AddProductViewModel viewModel)
+    {
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                Product product = new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = viewModel.Name,
+                    Price = viewModel.Price,
+                    Description = viewModel.Description,
+                    Stock = viewModel.Stock,
+                    CreatedDate = DateTime.Now
+                };
+                var result = await _productWriteRepository.AddAsync(product);
+                if (result)
+                {
+                    await _productWriteRepository.SaveChangesAsync();
+                    return Ok();
+                }
+            }
+            return BadRequest(ModelState);
+        }
+        catch (Exception)
+        {
+            //Logging
+            return BadRequest();
+        }
+    }
+
 
 }
