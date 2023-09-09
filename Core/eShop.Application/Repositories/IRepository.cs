@@ -1,5 +1,8 @@
-﻿namespace eShop.Application.Repositories;
+﻿using eShop.Domain.Entities.Common;
 
-public interface IRepository
+namespace eShop.Application.Repositories;
+
+public interface IRepository<T> where T : BaseEntity
 {
+
 }
