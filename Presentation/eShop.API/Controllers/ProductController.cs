@@ -1,5 +1,5 @@
 ﻿using eShop.Application.Paginations;
-using eShop.Application.Repositories.ProductRepository;
+using eShop.Application.Repositories;
 using eShop.Application.ViewModels;
 using eShop.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -9,13 +9,11 @@ namespace eShop.API.Controllers;
 [Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
-    private readonly IProductReadRepository _productReadRepository;
-    private readonly IProductWriteRepository _productWriteRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ProductController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository)
+    public ProductController(IUnitOfWork unitOfWork)
     {
-        this._productReadRepository = productReadRepository;
-        this._productWriteRepository = productWriteRepository;
+        this._unitOfWork = unitOfWork;
     }
 
     [HttpGet("getAll")]
@@ -23,8 +21,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            //return Ok(_productReadRepository.GetAll());
-            var products = _productReadRepository.GetAll(tracking: false);
+            var products = _unitOfWork.ProductReadRepository.GetAll(tracking: false);
             var totalCount = products.Count();
             products = products.OrderBy(p => p.CreatedDate).Skip(pagination.Size * pagination.Page)
                 .Take(pagination.Size).ToList();
@@ -37,7 +34,7 @@ public class ProductController : ControllerBase
         }
     }
 
-    [HttpPost("add")]
+    [HttpPost("Add")]
     public async Task<IActionResult> Add([FromBody]AddProductViewModel viewModel)
     {
         try
@@ -53,10 +50,10 @@ public class ProductController : ControllerBase
                     Stock = viewModel.Stock,
                     CreatedDate = DateTime.Now
                 };
-                var result = await _productWriteRepository.AddAsync(product);
+                var result = await _unitOfWork.ProductWriteRepository.AddAsync(product);
                 if (result)
                 {
-                    await _productWriteRepository.SaveChangesAsync();
+                    await _unitOfWork.ProductWriteRepository.SaveChangesAsync();
                     return Ok();
                 }
             }
@@ -68,6 +65,5 @@ public class ProductController : ControllerBase
             return BadRequest();
         }
     }
-
 
 }

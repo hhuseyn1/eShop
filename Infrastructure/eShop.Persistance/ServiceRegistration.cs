@@ -7,6 +7,8 @@ using eShop.Application.Repositories.OrderRepository;
 using eShop.Persistance.Repositories.CustomerRepositories;
 using eShop.Persistance.Repositories.OrderRepositories;
 using eShop.Application.Repositories.CustomerRepository;
+using eShop.Application.Repositories;
+using eShop.Persistance.Repositories;
 
 namespace eShop.Persistance;
 
@@ -19,13 +21,6 @@ public static class ServiceRegistration
         .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)), 
         ServiceLifetime.Transient);
         
-        services.AddTransient<IProductReadRepository,ProductReadRepository>();
-        services.AddTransient<IProductReadRepository,ProductReadRepository>();
-
-        services.AddTransient<IOrderReadRepository, OrderReadRepository>();
-        services.AddTransient<IOrderReadRepository, OrderReadRepository>();
-
-        services.AddTransient<ICustomerReadRepository, CustomerReadRepository>();
-        services.AddTransient<ICustomerReadRepository, CustomerReadRepository>();
+        services.AddTransient<IUnitOfWork,UnitOfWork>();
     }
 }
