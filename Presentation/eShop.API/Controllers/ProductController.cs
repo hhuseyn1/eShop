@@ -1,8 +1,12 @@
-﻿using eShop.Application.Paginations;
+﻿using eShop.Application.Features.Commands.AddProduct;
+using eShop.Application.Features.Queries.Product.GetAllProducts;
+using eShop.Application.Paginations;
 using eShop.Application.Repositories;
 using eShop.Application.ViewModels;
 using eShop.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace eShop.API.Controllers;
 
@@ -10,27 +14,26 @@ namespace eShop.API.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMediator mediator;
 
-    public ProductController(IUnitOfWork unitOfWork)
+    public ProductController(IUnitOfWork unitOfWork,IMediator mediator)
     {
         this._unitOfWork = unitOfWork;
+        this.mediator = mediator;
     }
 
     [HttpGet("getAll")]
-    public IActionResult GetAll([FromQuery] Pagination pagination)
+    public async Task<IActionResult> GetAll([FromQuery] GetProductsQueryRequest request)
     {
         try
         {
-            var products = _unitOfWork.ProductReadRepository.GetAll(tracking: false);
-            var totalCount = products.Count();
-            products = products.OrderBy(p => p.CreatedDate).Skip(pagination.Size * pagination.Page)
-                .Take(pagination.Size).ToList();
-            return Ok(new { products, totalCount });
+            var response = mediator.Send(request);
+            return Ok(response);
         }
         catch (Exception)
         {
             //Logging
-            return BadRequest();
+            return StatusCode((int)HttpStatusCode.InternalServerError);
         }
     }
 
@@ -51,34 +54,21 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("Add")]
-    public async Task<IActionResult> Add([FromBody]AddProductViewModel viewModel)
+    public async Task<IActionResult> Add([FromBody]AddProductCommandRequest request)
     {
         try
         {
             if (ModelState.IsValid)
             {
-                Product product = new()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = viewModel.Name,
-                    Price = viewModel.Price,
-                    Description = viewModel.Description,
-                    Stock = viewModel.Stock,
-                    CreatedDate = DateTime.Now
-                };
-                var result = await _unitOfWork.ProductWriteRepository.AddAsync(product);
-                if (result)
-                {
-                    await _unitOfWork.ProductWriteRepository.SaveChangesAsync();
-                    return Ok();
-                }
+                await mediator.Send(request);
+                return StatusCode((int)HttpStatusCode.Created);
             }
             return BadRequest(ModelState);
         }
         catch (Exception)
         {
             //Logging
-            return BadRequest();
+            return StatusCode((int)HttpStatusCode.InternalServerError);
         }
     }
 
