@@ -1,4 +1,5 @@
 ﻿using eShop.Application.Features.Commands.ProductCommands.AddProduct;
+using eShop.Application.Features.Commands.ProductCommands.UpdateProduct;
 using eShop.Application.Features.Queries.Product.GetAllProducts;
 using eShop.Application.Paginations;
 using eShop.Application.Repositories;
@@ -16,7 +17,7 @@ public class ProductController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMediator mediator;
 
-    public ProductController(IUnitOfWork unitOfWork,IMediator mediator)
+    public ProductController(IUnitOfWork unitOfWork, IMediator mediator)
     {
         this._unitOfWork = unitOfWork;
         this.mediator = mediator;
@@ -42,8 +43,8 @@ public class ProductController : ControllerBase
     {
         try
         {
-            var product = await _unitOfWork.ProductReadRepository.GetAsync(p=>p.Id.ToString() == id);    
-            if(product is not null)
+            var product = await _unitOfWork.ProductReadRepository.GetAsync(p => p.Id.ToString() == id);
+            if (product is not null)
                 return Ok(product);
             return NotFound();
         }
@@ -54,7 +55,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("Add")]
-    public async Task<IActionResult> Add([FromBody]AddProductCommandRequest request)
+    public async Task<IActionResult> Add([FromBody] AddProductCommandRequest request)
     {
         try
         {
@@ -73,33 +74,26 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("Update")]
-    public async Task<IActionResult> Update([FromBody] AddProductViewModel viewModel)
+    public async Task<IActionResult> Update([FromBody] UpdateProductCommandRequest request)
     {
         try
         {
-            Product product = new()
-            {
-                Description = viewModel.Description,
-                Stock = viewModel.Stock,
-                Price = viewModel.Price
-            };
-
-            var data = _unitOfWork.ProductWriteRepository.Update(product);
-            await _unitOfWork.SaveChangesAsync();
-            return Ok();
+            var response = await mediator.Send(request);
+            return Ok(response);
         }
         catch (Exception)
         {
-            return BadRequest();
+            // logging
+            return StatusCode((int)HttpStatusCode.InternalServerError);
         }
     }
 
     [HttpDelete("Delete/{id}")]
-    public async Task<IActionResult> Remove([FromQuery]string id)
+    public async Task<IActionResult> Remove([FromQuery] string id)
     {
         try
         {
-            var product = await _unitOfWork.ProductReadRepository.GetAsync(id); 
+            var product = await _unitOfWork.ProductReadRepository.GetAsync(id);
             var data = _unitOfWork.ProductWriteRepository.Remove(product);
             await _unitOfWork.SaveChangesAsync();
             return Ok();
