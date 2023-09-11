@@ -7,6 +7,7 @@ using eShop.Application.ViewModels;
 using eShop.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace eShop.API.Controllers;
@@ -88,20 +89,18 @@ public class ProductController : ControllerBase
         }
     }
 
-    [HttpDelete("Delete/{id}")]
-    public async Task<IActionResult> Remove([FromQuery] string id)
+    [HttpDelete]
+    [Route("DeleteById/{id}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id, UpdateProductCommandRequest request)
     {
-        try
+        var myContact = await _unitOfWork.ProductReadRepository.GetAsync(id.ToString());
+        if (myContact is not null)
         {
-            var product = await _unitOfWork.ProductReadRepository.GetAsync(id);
-            var data = _unitOfWork.ProductWriteRepository.Remove(product);
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.ProductWriteRepository.Remove(myContact);
+            await _unitOfWork.ProductWriteRepository.SaveChangesAsync();
             return Ok();
         }
-        catch (Exception)
-        {
-            return BadRequest();
-        }
+        return NotFound();
     }
 
 }
