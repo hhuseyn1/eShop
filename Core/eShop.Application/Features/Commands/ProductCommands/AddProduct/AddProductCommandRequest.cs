@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace eShop.Application.Features.Commands.AddProduct;
+namespace eShop.Application.Features.Commands.ProductCommands.AddProduct;
 
 public class AddProductCommandRequest : IRequest
 {

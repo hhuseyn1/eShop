@@ -1,4 +1,4 @@
-﻿using eShop.Application.Features.Commands.AddProduct;
+﻿using eShop.Application.Features.Commands.ProductCommands.AddProduct;
 using eShop.Application.Features.Queries.Product.GetAllProducts;
 using eShop.Application.Paginations;
 using eShop.Application.Repositories;
